@@ -1,0 +1,30 @@
+(require 'fn-fx.util.reflect-utils)
+(fn-fx.util.reflect-utils/get-value-ctors javafx.scene.image.Image)
+(fn-fx.util.reflect-utils/get-value-ctors javafx.stage.Stage)
+(fn-fx-simple.core/-start)
+(fn-fx.util.reflect-utils/class-properties javafx.stage.Stage)
+(clojure.pprint/pprint (fn-fx.util.reflect-utils/class-properties javafx.stage.Stage))
+(clojure.pprint/pprint (fn-fx.util.reflect-utils/class-properties javafx.scene.layout.StackPane))
+(filter #(= (:kw-name %) :children) (fn-fx.util.reflect-utils/class-properties javafx.scene.layout.StackPane))
+(filter #(= (:kw-name %) :icons) (fn-fx.util.reflect-utils/class-properties javafx.stage.Stage))
+(filter #(= (:kw-name %) :fill) (fn-fx.util.reflect-utils/class-properties javafx.scene.text.Text))
+(require '[fn-fx.util.reflect-utils :as ru])
+(ru/get-value-ctors javafx.scene.image.Image)
+(require '[fn-fx.util.render-core :as render-core])
+(require '[fn-fx.render-core :as render-core])
+(ancestors javafx.scene.image.Image)
+(doseq [c (conj (ancestors klass) klass)]
+    (defmethod convert-value [Value c]
+      [{:keys [args f]} _]
+)
+(render-core/convert-value)
+(require '[fn-fx.controls :as ui])
+(def im (ui/image :is (io/input-stream
+                                           (io/resource "icon.png")))
+)
+(require '[clojure.java.io :as io])
+(def im (ui/image :is (io/input-stream (io/resource "icon.png")))
+)
+im
+(render-core/convert-value im)
+(render-core/convert-value im javafx.scene.image.Image)
