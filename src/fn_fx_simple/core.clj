@@ -16,23 +16,21 @@
 
 (defn button-press
   [data-state]
-  (send data-state
-        assoc
-        :text "Said Hello"
-        :button-disabled? true)
-  (send data-state
-        (fn [the-data]
-          (Thread/sleep 5000)
-          (assoc the-data
-                 :text "Say 'Hello World'"
-                 :button-disabled? false))))
+  (send data-state assoc
+        :button-state :disabled)
+  (send data-state (fn [the-data]
+                     (Thread/sleep 5000)
+                     (assoc the-data
+                            :button-state :enabled))))
 
 (defui TheButton
   (render
    [this args]
-   (ui/stack-pane :children [(ui/button :text (:text args)
-                                        :disable (:button-disabled? args)
-                                        :on-action {:event :button-press})])))
+   (let [button-state (:button-state args)
+         button-text ((:button-text args) button-state)]
+     (ui/stack-pane :children [(ui/button :text button-text 
+                                          :disable (= :disabled button-state)
+                                          :on-action {:event :button-press})]))))
 
 (defui TheStage
   (render
@@ -51,21 +49,24 @@
 
 (defn -start
   [& args]
-  (let [data-state (agent {:text "Say 'Hello World'"
-                           :button-disabled? false })
+  (let [data-state (agent {:button-state :enabled,
+                           :button-text {:enabled "Say 'Hello World'"
+                                         :disabled "Said 'Hello World'"}})
         handler-fn (fn [{:keys [event]}]
                      (condp = event
-                       :button-press (button-press data-state)))
+                            :button-press (button-press data-state)))
         ui-state (agent (dom/app
                          (the-stage @data-state)
                          handler-fn))
         update-ui-state (fn [_ _ _ _]
-                          (send ui-state (fn [old-ui]
-                                           (dom/update-app old-ui
-                                                           (the-stage @data-state)))))]
+                          (send ui-state
+                                (fn [old-ui]
+                                  (dom/update-app old-ui
+                                                  (the-stage @data-state)))))]
     (add-watch data-state
                :ui
                update-ui-state)))
+
 
 (defn start-javafx
   [& args]
@@ -76,6 +77,6 @@
   (require 'fn-fx.util.reflect-utils)
   (fn-fx.util.reflect-utils/get-value-ctors javafx.scene.image.Image)
 
-  )
-(when *compile-files*
-  (javafx.application.Platform/exit))
+  
+  (when *compile-files*
+    (javafx.application.Platform/exit)))
